@@ -1,18 +1,21 @@
 import { google } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { streamText, convertToModelMessages } from 'ai';
 
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
+
     const result = await streamText({
       model: google('gemini-1.5-flash'),
-      messages,
+      // This helper converts UI messages to the format the model expects
+      messages: convertToModelMessages(messages),
     });
-    return result.toTextStreamResponse();
+
+    return result.toDataStreamResponse();
   } catch (error: any) {
-    console.error('CRITICAL_API_ERROR:', error.message);
-    return new Response(error.message, { status: 500 });
+    console.error('AI_ERROR:', error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
 }
