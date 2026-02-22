@@ -9,8 +9,8 @@ export async function POST(req: Request) {
 
     const result = await streamText({
       model: google('gemini-1.5-flash'),
-      // This helper converts UI messages to the format the model expects
-      messages: convertToModelMessages(messages),
+      // Added 'await' here to resolve the Promise
+      messages: await convertToModelMessages(messages),
     });
 
     return result.toDataStreamResponse();
