@@ -4,9 +4,9 @@ import { useState, useEffect } from 'react';
 
 export default function App() {
   const [mounted, setMounted] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
+  // Added : any here to stop the TypeScript "Property does not exist" error
+  const { messages, input, handleInputChange, handleSubmit, status }: any = useChat();
 
-  // Wait for the browser to take over before showing the active UI
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -15,14 +15,14 @@ export default function App() {
 
   return (
     <div style={{ background: '#050505', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
-      <div style={{ flex: 1, width: '100%', maxWidth: '600px', overflowY: 'auto', marginTop: '50px' }}>
+      <div style={{ flex: 1, width: '100%', maxWidth: '600px', overflowY: 'auto', marginTop: '50px', width: '100%' }}>
         {messages.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20vh' }}>
             <h1 style={{ fontSize: '100px', fontWeight: '900' }}>M</h1>
             <p style={{ color: '#444' }}>BUSINESS INTELLIGENCE</p>
           </div>
         ) : (
-          messages.map((m, i) => (
+          messages.map((m: any, i: number) => (
             <div key={i} style={{ margin: '20px 0', textAlign: m.role === 'user' ? 'right' : 'left' }}>
               <div style={{ display: 'inline-block', padding: '10px 20px', borderRadius: '10px', background: m.role === 'user' ? '#111' : '#222' }}>
                 {m.content}
@@ -38,23 +38,22 @@ export default function App() {
           value={input} 
           onChange={handleInputChange}
           placeholder='Ask Mwangi...'
-          autoFocus
         />
         <button 
           type="submit"
-          disabled={status === 'streaming' || !input.trim()}
+          disabled={status === 'submitted' || status === 'streaming'}
           style={{ 
-            background: (status === 'streaming' || !input.trim()) ? '#333' : 'white', 
+            background: 'white', 
             color: 'black', 
             padding: '0 20px', 
             borderRadius: '12px', 
             fontWeight: 'bold', 
             cursor: 'pointer', 
             border: 'none',
-            opacity: (status === 'streaming' || !input.trim()) ? 0.5 : 1
+            opacity: (status === 'submitted' || status === 'streaming') ? 0.5 : 1
           }}
         >
-          {status === 'streaming' ? '...' : 'SEND'}
+          SEND
         </button>
       </form>
     </div>
