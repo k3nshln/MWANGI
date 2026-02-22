@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 
 export default function App() {
   const [mounted, setMounted] = useState(false);
-  // Added : any here to stop the TypeScript "Property does not exist" error
   const { messages, input, handleInputChange, handleSubmit, status }: any = useChat();
 
   useEffect(() => {
@@ -15,7 +14,7 @@ export default function App() {
 
   return (
     <div style={{ background: '#050505', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
-      <div style={{ flex: 1, width: '100%', maxWidth: '600px', overflowY: 'auto', marginTop: '50px', width: '100%' }}>
+      <div style={{ flex: 1, width: '100%', maxWidth: '600px', overflowY: 'auto', marginTop: '50px' }}>
         {messages.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20vh' }}>
             <h1 style={{ fontSize: '100px', fontWeight: '900' }}>M</h1>
