@@ -1,19 +1,28 @@
 'use client';
 import { useChat } from '@ai-sdk/react';
+import { useState, useEffect } from 'react';
 
 export default function App() {
-  const { messages, input, handleInputChange, handleSubmit, status, error }: any = useChat();
+  const [mounted, setMounted] = useState(false);
+  const { messages, input, handleInputChange, handleSubmit, status } = useChat();
+
+  // Wait for the browser to take over before showing the active UI
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
 
   return (
     <div style={{ background: '#050505', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
       <div style={{ flex: 1, width: '100%', maxWidth: '600px', overflowY: 'auto', marginTop: '50px' }}>
-        {messages?.length === 0 ? (
+        {messages.length === 0 ? (
           <div style={{ textAlign: 'center', marginTop: '20vh' }}>
             <h1 style={{ fontSize: '100px', fontWeight: '900' }}>M</h1>
             <p style={{ color: '#444' }}>BUSINESS INTELLIGENCE</p>
           </div>
         ) : (
-          messages.map((m: any, i: number) => (
+          messages.map((m, i) => (
             <div key={i} style={{ margin: '20px 0', textAlign: m.role === 'user' ? 'right' : 'left' }}>
               <div style={{ display: 'inline-block', padding: '10px 20px', borderRadius: '10px', background: m.role === 'user' ? '#111' : '#222' }}>
                 {m.content}
@@ -21,8 +30,6 @@ export default function App() {
             </div>
           ))
         )}
-        {status === 'streaming' && <div style={{ color: '#444', margin: '10px' }}>Mwangi is typing...</div>}
-        {error && <div style={{ color: 'red', margin: '10px' }}>Error: {error.message}</div>}
       </div>
 
       <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
@@ -31,7 +38,7 @@ export default function App() {
           value={input} 
           onChange={handleInputChange}
           placeholder='Ask Mwangi...'
-          disabled={status === 'streaming'}
+          autoFocus
         />
         <button 
           type="submit"
@@ -43,9 +50,12 @@ export default function App() {
             borderRadius: '12px', 
             fontWeight: 'bold', 
             cursor: 'pointer', 
-            border: 'none' 
+            border: 'none',
+            opacity: (status === 'streaming' || !input.trim()) ? 0.5 : 1
           }}
-        >SEND</button>
+        >
+          {status === 'streaming' ? '...' : 'SEND'}
+        </button>
       </form>
     </div>
   );
