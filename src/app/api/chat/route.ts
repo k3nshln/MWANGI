@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// We initialize without a version to let the library pick the best one
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
 
 export async function POST(req: Request) {
@@ -7,10 +8,14 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
     const lastMessage = messages[messages.length - 1].content;
     
-    // We are adding the 'models/' prefix explicitly as requested by the error logs
-    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+    // Using the ID that works for both v1 and v1beta
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+    });
 
-    const result = await model.generateContentStream(lastMessage);
+    const result = await model.generateContentStream({
+        contents: [{ role: 'user', parts: [{ text: lastMessage }] }],
+    });
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -18,7 +23,9 @@ export async function POST(req: Request) {
         try {
           for await (const chunk of result.stream) {
             const text = chunk.text();
-            controller.enqueue(encoder.encode(text));
+            if (text) {
+                controller.enqueue(encoder.encode(text));
+            }
           }
           controller.close();
         } catch (e) {
@@ -27,7 +34,9 @@ export async function POST(req: Request) {
       },
     });
 
-    return new Response(stream);
+    return new Response(stream, {
+        headers: { "Content-Type": "text/plain; charset=utf-8" }
+    });
   } catch (error: any) {
     console.error("API Error:", error);
     return new Response(error.message, { status: 500 });
