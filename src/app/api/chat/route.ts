@@ -9,11 +9,11 @@ export async function POST(req: Request) {
 
     const result = await streamText({
       model: google('gemini-1.5-flash'),
-      // Added 'await' here to resolve the Promise
       messages: await convertToModelMessages(messages),
     });
 
-    return result.toDataStreamResponse();
+    // Renamed to the correct method for SDK 5.0
+    return result.toTextStreamResponse();
   } catch (error: any) {
     console.error('AI_ERROR:', error);
     return new Response(JSON.stringify({ error: error.message }), { status: 500 });
