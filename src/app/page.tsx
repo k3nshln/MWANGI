@@ -2,8 +2,7 @@
 import { useChat } from '@ai-sdk/react';
 
 export default function App() {
-  // Use 'any' to force TypeScript to stop blocking the build
-  const { messages, input, handleInputChange, handleSubmit }: any = useChat();
+  const { messages, input, handleInputChange, handleSubmit, status }: any = useChat();
 
   return (
     <div style={{ background: '#050505', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
@@ -22,9 +21,10 @@ export default function App() {
             </div>
           ))
         )}
+        {status === 'loading' && <div style={{ color: '#444' }}>Mwangi is thinking...</div>}
       </div>
 
-      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
+      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
         <input 
           style={{ flex: 1, background: '#0f0f0f', border: '1px solid #333', padding: '20px', color: 'white', borderRadius: '12px', outline: 'none' }}
           value={input} 
