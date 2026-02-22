@@ -7,11 +7,8 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
     const lastMessage = messages[messages.length - 1].content;
     
-    // We changed the model string to the exact version Google expects
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    
-    // Some versions of the SDK prefer the full path if the above fails:
-    // const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+    // We are using 'gemini-1.5-flash-latest' which is the most compatible string
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
     const result = await model.generateContentStream(lastMessage);
 
