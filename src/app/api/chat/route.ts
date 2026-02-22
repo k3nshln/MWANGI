@@ -7,22 +7,32 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
     const lastMessage = messages[messages.length - 1].content;
     
+    // We changed the model string to the exact version Google expects
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    // Some versions of the SDK prefer the full path if the above fails:
+    // const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
+
     const result = await model.generateContentStream(lastMessage);
 
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
-        for await (const chunk of result.stream) {
-          const text = chunk.text();
-          controller.enqueue(encoder.encode(text));
+        try {
+          for await (const chunk of result.stream) {
+            const text = chunk.text();
+            controller.enqueue(encoder.encode(text));
+          }
+          controller.close();
+        } catch (e) {
+          controller.error(e);
         }
-        controller.close();
       },
     });
 
     return new Response(stream);
   } catch (error: any) {
+    console.error("API Error:", error);
     return new Response(error.message, { status: 500 });
   }
 }
