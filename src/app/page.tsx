@@ -2,7 +2,7 @@
 import { useChat } from '@ai-sdk/react';
 
 export default function App() {
-  const { messages, input, handleInputChange, handleSubmit, status }: any = useChat();
+  const { messages, input, handleInputChange, handleSubmit, status, error }: any = useChat();
 
   return (
     <div style={{ background: '#050505', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
@@ -21,19 +21,30 @@ export default function App() {
             </div>
           ))
         )}
-        {status === 'loading' && <div style={{ color: '#444' }}>Mwangi is thinking...</div>}
+        {status === 'streaming' && <div style={{ color: '#444', margin: '10px' }}>Mwangi is typing...</div>}
+        {error && <div style={{ color: 'red', margin: '10px' }}>Error: {error.message}</div>}
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); handleSubmit(e); }} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
+      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
         <input 
           style={{ flex: 1, background: '#0f0f0f', border: '1px solid #333', padding: '20px', color: 'white', borderRadius: '12px', outline: 'none' }}
           value={input} 
           onChange={handleInputChange}
           placeholder='Ask Mwangi...'
+          disabled={status === 'streaming'}
         />
         <button 
           type="submit"
-          style={{ background: 'white', color: 'black', padding: '0 20px', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
+          disabled={status === 'streaming' || !input.trim()}
+          style={{ 
+            background: (status === 'streaming' || !input.trim()) ? '#333' : 'white', 
+            color: 'black', 
+            padding: '0 20px', 
+            borderRadius: '12px', 
+            fontWeight: 'bold', 
+            cursor: 'pointer', 
+            border: 'none' 
+          }}
         >SEND</button>
       </form>
     </div>
