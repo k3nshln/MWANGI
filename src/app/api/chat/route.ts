@@ -7,8 +7,8 @@ export async function POST(req: Request) {
     const { messages } = await req.json();
     const lastMessage = messages[messages.length - 1].content;
     
-    // We are using 'gemini-1.5-flash-latest' which is the most compatible string
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    // We are adding the 'models/' prefix explicitly as requested by the error logs
+    const model = genAI.getGenerativeModel({ model: "models/gemini-1.5-flash" });
 
     const result = await model.generateContentStream(lastMessage);
 
