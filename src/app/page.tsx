@@ -1,16 +1,50 @@
 'use client';
-import { useChat } from '@ai-sdk/react';
 import { useState, useEffect } from 'react';
 
 export default function App() {
-  const [mounted, setMounted] = useState(false);
-  const { messages, input, handleInputChange, handleSubmit, status }: any = useChat();
+  const [messages, setMessages] = useState<any[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  async function sendMessage(e: any) {
+    e.preventDefault();
+    if (!input.trim() || loading) return;
 
-  if (!mounted) return null;
+    const userMessage = { role: 'user', content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        body: JSON.stringify({ messages: [...messages, userMessage] }),
+      });
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let aiContent = '';
+
+      setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+
+      while (true) {
+        const { done, value } = await reader!.read();
+        if (done) break;
+        const chunk = decoder.decode(value);
+        aiContent += chunk;
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1].content = aiContent;
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error("Chat Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div style={{ background: '#050505', color: 'white', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px' }}>
@@ -21,7 +55,7 @@ export default function App() {
             <p style={{ color: '#444' }}>BUSINESS INTELLIGENCE</p>
           </div>
         ) : (
-          messages.map((m: any, i: number) => (
+          messages.map((m, i) => (
             <div key={i} style={{ margin: '20px 0', textAlign: m.role === 'user' ? 'right' : 'left' }}>
               <div style={{ display: 'inline-block', padding: '10px 20px', borderRadius: '10px', background: m.role === 'user' ? '#111' : '#222' }}>
                 {m.content}
@@ -29,29 +63,17 @@ export default function App() {
             </div>
           ))
         )}
+        {loading && <div style={{ color: '#444' }}>...</div>}
       </div>
 
-      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
+      <form onSubmit={sendMessage} style={{ width: '100%', maxWidth: '600px', paddingBottom: '40px', display: 'flex', gap: '10px' }}>
         <input 
-          style={{ flex: 1, background: '#0f0f0f', border: '1px solid #333', padding: '20px', color: 'white', borderRadius: '12px', outline: 'none' }}
+          style={{ flex: 1, background: '#0f0f0f', border: '#333 1px solid', padding: '20px', color: 'white', borderRadius: '12px' }}
           value={input} 
-          onChange={handleInputChange}
+          onChange={(e) => setInput(e.target.value)}
           placeholder='Ask Mwangi...'
         />
-        <button 
-          type="submit"
-          disabled={status === 'submitted' || status === 'streaming'}
-          style={{ 
-            background: 'white', 
-            color: 'black', 
-            padding: '0 20px', 
-            borderRadius: '12px', 
-            fontWeight: 'bold', 
-            cursor: 'pointer', 
-            border: 'none',
-            opacity: (status === 'submitted' || status === 'streaming') ? 0.5 : 1
-          }}
-        >
+        <button type="submit" style={{ background: 'white', color: 'black', padding: '0 20px', borderRadius: '12px', fontWeight: 'bold' }}>
           SEND
         </button>
       </form>
